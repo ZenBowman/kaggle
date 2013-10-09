@@ -63,10 +63,24 @@ def contains_news(bp):
     text = nltk.word_tokenize(bp)
     return text.count("news") > 0
 
+def not_food_or_health(elems):
+    bp = elems[2]
+    category = elems[3]
+    if ((bp.find("recipe") == -1) and
+        (bp.find("bake") == -1) and
+        (bp.find("food") == -1)):
+        if not category == "health":
+            return True
+    return False
+
 def is_news(elems):
     url = elems[0]
     boilerplate = elems[2]
     return (url.find("news") >= 0) or (contains_news(boilerplate))
+
+def is_news_in_url(elems):
+    url = elems[0]
+    return (url.find("news") >= 0)
 
 def is_news_default(elems):
     return coerce_int(elems[17])
@@ -74,20 +88,21 @@ def is_news_default(elems):
 def label(elems):
     return coerce_int(elems[26])
 
-def present_results(vals):
+def present_results(vals, fname):
     (f1Tf2F, f1Tf2T,f1Ff2F, f1Ff2T) = vals
     f1T = float(f1Tf2F + f1Tf2T)
     f1F = float(f1Ff2F + f1Ff2T)
 
-    print "Number of times f1 was true = %s" % f1T
-    print "\tf2 false | f1 true = %s (%s percent)" % (f1Tf2F, f1Tf2F/f1T)
-    print "\tf2 true | f1 true = %s (%s percent)" % (f1Tf2T, f1Tf2T/f1T)
+    print "Number of times %s was true = %s" % (fname, f1T)
+    print "\tf2 false | %s true = %s (%s percent)" % (fname, f1Tf2F, f1Tf2F/f1T)
+    print "\tf2 true | %s true = %s (%s percent)" % (fname, f1Tf2T, f1Tf2T/f1T)
         
-    print "Number of times f2 was false = %s" % f1F
-    print "\tf2 false | f1 false = %s (%s percent)" % (f1Ff2F, f1Ff2F/f1F)
-    print "\tf2 true | f1 false = %s (%s percent)" % (f1Ff2T, f1Ff2T/f1F)
+    print "Number of times %s was false = %s" % (fname, f1F)
+    print "\tf2 false | %s false = %s (%s percent)" % (fname, f1Ff2F, f1Ff2F/f1F)
+    print "\tf2 true | %s false = %s (%s percent)" % (fname, f1Ff2T, f1Ff2T/f1F)
         
 if __name__ == "__main__":
-    vals = find_discriminator(sys.argv[1], is_news, label)
-    present_results(vals)
+    func = eval(sys.argv[2])
+    vals = find_discriminator(sys.argv[1], func, label)
+    present_results(vals, sys.argv[2])
         
